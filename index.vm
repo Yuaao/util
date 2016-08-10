@@ -1,0 +1,182 @@
+/**
+ * Created by wb-gaoyu.b on 2016/8/10.
+ */
+关于velocity的前端总结：
+1.声明变量
+#set($var = XXX)
+#set ($arr=["yt1","t2"])
+支持算术运算符 但是当存在算数运算符时一定要有空格存在
+eg：#set($index = $velocityCount - 1)
+$velocityCount 数组的的索引值1开始
+
+2、注释:
+    单行## XXX
+多行#* xxx
+
+
+3、变量 Variables
+以 "$" 开头，第一个字符必须为字母。character followed by a VTL Identifier. (a .. z
+or A .. Z).
+变量可以包含的字符有以下内容：
+alphabetic (a .. z, A .. Z)
+numeric (0 .. 9)
+hyphen ("-")
+underscore ("_")
+
+4、Properties
+$Identifier.Identifier
+$user.name
+hashtable user中的的name值.类似：user.get("name")
+#set($specialCertPicUrl = $merchantModelUtil.getSpecialCerts($!{merchant}).get(0).certPicUrl)
+这里的get（0）是获取数组中的第一个元素
+5、Methods
+这些方法都是后台定义的一些方法，getCode（），getDesc（）等等
+object user.getName() = $user.getName()
+
+6、Formal Reference Notation
+用{}把变量名跟字符串分开
+如
+#set ($user="csy"}
+${user}name
+返回csyname
+$username
+$!username
+$与$!的区别
+当找不到username的时候，$username返回字符串"$username"，而$!username返回空字符串""
+7、双引号 与 引号
+#set ($var="helo")
+test"$var" 返回testhello
+test'$var' 返回test'$var'
+可以通过设置 stringliterals.interpolate=false改变默认处理方式
+
+8、条件语句
+#if( $foo )
+    <strong>Velocity!</strong>
+#end
+#if($foo)
+    #elseif()
+#else
+#end
+当$foo为null或为Boolean对象的false值执行.
+
+9、逻辑运算符:== && || !
+
+    10、循环语句
+#foreach($var in $arrays ) // 集合包含下面三种Vector, a Hashtable or an Array
+#end
+#foreach( $product in $allProducts )
+<li>$product</li>
+#end
+
+#foreach( $key in $allProducts.keySet() )
+<li>Key: $key -> Value: $allProducts.get($key)</li>
+#end
+
+#foreach( $customer in $customerList )
+<tr><td>$velocityCount</td><td>$customer.Name</td></tr>
+#end
+11、关于数组
+$!{velocityCount} 数组索引值（1开始）
+$!{list.size()}list数组长度
+$list.isEmpty()判断数组是否为空
+#foreach( $product in $allProducts )
+<li>$product</li>
+#break // 跳出循环
+#end
+12.#parse("b.vm")
+则在解析 a.vm 页面的这行代码时，先将 b.vm 插入到其所在的位置，并解析执行， 而且 b.vm 可以共享 a.vm 中的变量。
+
+如果 a.vm #parse("b.vm")，b.vm 可以直接使用 a.vm 中定义的变量。 注意：如果 b.vm 定义了同名变量，则 b.vm 中使用自身的定义。
+13.#include()
+
+将文件原文包含进当前文档中。
+
+#include("a.vm" "readme.txt")
+14.#define()
+
+类似于 C 语言的 #define 命令，有点像自定义对象。
+
+#define($hello)
+Hello ${who}!
+#end
+#set($who = "World")
+
+$hello
+## 显示 "Hello World!"
+
+15.对象 & 访问
+
+#set($obj = {"key":"value", "name":"space"})
+$obj.get("key")
+
+#foreach(#item in $obj)
+$item
+#end
+上面的 $item 取到的是 values，如果需要在遍历对象过程中，同时取到对象的 keys， 可以使用 entrySet() 或 keySet() 方法。
+
+#foreach($item in $!obj.entrySet())
+$!item.key : $!item.value
+#end
+
+#foreach($item in $obj.keySet())
+$item : $obj.get($item)
+#end
+注： 这种集合的遍历是无序的，即遍历顺序可能不同于 $obj 中元素的定义顺序 （据目前所知，是根据键的字母排序的）。
+
+另外有两种不完美解决方法：
+
+I:
+    #set($obj = [
+    {"key":"key", "value":"value"},
+    {"key":"name", "value":"space"}
+])
+#foreach($item in $obj)
+$item.key : $item.value
+#end
+II:
+    #set($obj = [
+    ["key","value"],
+    ["name","space"]
+])
+#foreach($item in $obj)
+$item.get(0) : $item.get(1)
+#end
+之所以说 不完美 是因为：对于已知的 key，本可以直接
+
+$obj.get("key")
+现在只能遍历并进行比较取得，而且较早的 Velocity 版本无法使用 #break， 以便在找到匹配项之后立即退出循环。
+
+#foreach($item in $obj)
+#if("key" == $!obj.get(0))
+#set($myKey = $!type.get(1))
+##break
+#end
+#end
+
+
+16.#macros()
+
+#macro(macroName)
+#subMacro("name", "value")
+#end
+
+#macro(subMacro $param1 $param2)
+this is sub macro($param1, $param2).
+#end
+注意：如果 a.vm 和 b.vm 都在页面级存在同名，参数数量相同的宏，则后访问的页面 的宏不被加载。
+
+参考：
+项目开发中需要注意到的要点:
+    1. vm中显示变量，一律加！和{}，如：$!{userName}、$!{userVO.name}、$!{userVO.getName()}、$!{userMap.get(“Bob”)}
+2. 合并字符串
+如果变量是字符串或数值型，如 #set($user = “Tester”)，则应为 “welecom$!{user}”，而不是 “welcome” + $user
+3. #if($var)条件判断，当且仅当：$var存在（如果$var是Boolean/boolean型，还必须$var的值为Boolean.true/true）时，条件才成立
+4. #foreach()循环的时候，有个系统变量$velocityCount可直接使用，不必自己设定额外的计数器
+5. 比较字符串相等，#if($var == “test”)   #if(“test”.equals($var))均可，
+6. vm中生成URL
+#set($userName = “Bob”)
+“$offerModule.setTarget('modifySingleOffer.vm').addQueryData(‘userName’, $userName).fork()”
+“$offerModule.setTarget('modifySingleOffer.vm').addQueryData(‘userName’, ‘Bob’).fork()”
+目标大致如：http://127.0.0.1/offer/modifySingleOffer.htm?userName=Bob
+    7. vm中调用control
+$control.setTemplate("home:pageNavigator.vm").setParameter("position", "top").setParameter("pageList", $pageList)
