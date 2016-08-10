@@ -5,7 +5,7 @@ var index={
     get_param:function(){
         var str='', a, b,c;
         var a=window.location.href.split('?');
-             //    a ÎªÊý×éiPºÍÂ·¾¶
+             //    a ä¸ºæ•°ç»„iPå’Œè·¯å¾„
         if(a[1] && a[1] !=''){
             b=a[1].replace(/#/g,'').split('&');
             for(var i=0;i< b.length;i++){
